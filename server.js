@@ -21,7 +21,7 @@ const { renderOrderForm } = require("./views/order-form");
 const { renderOrderPrint } = require("./views/order-print");
 const { renderSettings } = require("./views/settings");
 const { renderSuppliersPage } = require("./views/suppliers");
-const { renderWeekPage } = require("./views/week");
+const { renderMonthPage } = require("./views/month");
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -240,10 +240,10 @@ router.get("/suppliers", requireAuth((req, res) => {
   send(res, 200, renderSuppliersPage(orders, settings));
 }));
 
-router.get("/week", requireAuth((req, res, params, query) => {
+router.get("/month", requireAuth((req, res, params, query) => {
   const orders = db.all("orders");
   const settings = db.getSettings();
-  send(res, 200, renderWeekPage(orders, settings, query));
+  send(res, 200, renderMonthPage(orders, settings, query));
 }));
 
 router.get("/orders/:id/print", requireAuth((req, res, params) => {

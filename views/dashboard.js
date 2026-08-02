@@ -120,17 +120,13 @@ function renderDashboard(orders, settings) {
     return `
     <div class="upcoming-row-wrap ${urgency}">
       <a href="/orders/${e(o.id)}" class="upcoming-row-link">
-        <div class="upcoming-main">
-          <div class="upcoming-top">
-            <span class="upcoming-customer">${e(o.customerName)}</span>
-            <span class="upcoming-price">${formatPrice(c.sellTotal)}</span>
-          </div>
-          <div class="upcoming-items">
-            ${e(itemsSummary || "—")}
-            <span class="upcoming-payment ${isPaid ? "" : "is-unpaid"}">· ${e(paymentLabel(o.paymentStatus))}</span>
-          </div>
-        </div>
+        <span class="upcoming-customer">${e(o.customerName)}</span>
+        <span class="upcoming-items">
+          ${e(itemsSummary || "—")}
+          <span class="upcoming-payment ${isPaid ? "" : "is-unpaid"}">· ${e(paymentLabel(o.paymentStatus))}</span>
+        </span>
       </a>
+      <a href="/orders/${e(o.id)}" class="upcoming-price">${formatPrice(c.sellTotal)}</a>
       ${statusQuickSelect(o, "/")}
       <a href="/orders/${e(o.id)}" class="upcoming-date">${formatDate(o.deliveryDate)}${urgencyLabel ? ` <em>· ${e(urgencyLabel)}</em>` : ""}</a>
     </div>`;
@@ -173,7 +169,7 @@ function renderDashboard(orders, settings) {
     <a href="/orders/new" class="btn btn-primary btn-fab">${icons.plus} הזמנה חדשה</a>
   `;
 
-  return layout({ title: "דשבורד", active: "dashboard", content, businessName: settings.businessName });
+  return layout({ title: "דשבורד", active: "dashboard", content, businessName: settings.businessName, showLogoTitle: true });
 }
 
 module.exports = { renderDashboard };

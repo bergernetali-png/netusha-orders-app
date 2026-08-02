@@ -9,12 +9,12 @@ try {
   cssVersion = fs.statSync(path.join(__dirname, "..", "public", "css", "style.css")).mtimeMs;
 } catch (err) { /* נשאר עם ברירת מחדל אם הקובץ עדיין לא קיים */ }
 
-function layout({ title, active, content, businessName }) {
+function layout({ title, active, content, businessName, showLogoTitle }) {
   const navItems = [
     { key: "dashboard", href: "/", label: "דשבורד", icon: icons.dashboard },
     { key: "orders", href: "/orders", label: "כל ההזמנות", icon: icons.list },
     { key: "new-order", href: "/orders/new", label: "הזמנה חדשה", icon: icons.plus },
-    { key: "week", href: "/week", label: "לוח שבועי", icon: icons.calendar },
+    { key: "month", href: "/month", label: "לוח חודשי", icon: icons.calendar },
     { key: "suppliers", href: "/suppliers", label: "ספקים וקניות", icon: icons.truck },
     { key: "settings", href: "/settings", label: "הגדרות", icon: icons.settings }
   ];
@@ -48,7 +48,9 @@ function layout({ title, active, content, businessName }) {
       </form>
     </aside>
     <div class="main">
-      <div class="topbar"><h1>${e(title)}</h1></div>
+      <div class="topbar">${showLogoTitle
+        ? `<img src="/images/netusha-logo.png" alt="${e(businessName || "NETUSHA")}" class="topbar-logo" />`
+        : `<h1>${e(title)}</h1>`}</div>
       <div class="main-content">${content}</div>
     </div>
   </div>

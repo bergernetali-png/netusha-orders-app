@@ -89,6 +89,7 @@ code { background: var(--color-bg-soft); padding: 2px 6px; border-radius: 4px; f
   margin-bottom: var(--space-5);
 }
 .topbar h1 { font-size: 1.6rem; font-family: "Frank Ruhl Libre", "Heebo", serif; letter-spacing: 0.01em; }
+.topbar-logo { height: 46px; width: auto; display: block; }
 .main-content { padding: 0 var(--space-6) var(--space-6); max-width: 1200px; }
 .panel-head h2, .admin-card > h3:first-child { font-family: "Frank Ruhl Libre", "Heebo", serif; letter-spacing: 0.01em; }
 
@@ -168,39 +169,38 @@ code { background: var(--color-bg-soft); padding: 2px 6px; border-radius: 4px; f
 
 /* ---------------- Attention / Upcoming lists ---------------- */
 .attention-list, .upcoming-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.attention-row, .upcoming-row {
+.attention-row {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); min-height: 58px;
   background: #fff; border: 1px solid var(--color-border);
   transition: box-shadow 0.15s, border-color 0.15s;
 }
-.attention-row:hover, .upcoming-row:hover { box-shadow: 0 2px 10px rgba(43,37,48,0.08); border-color: var(--color-accent); }
+.attention-row:hover { box-shadow: 0 2px 10px rgba(43,37,48,0.08); border-color: var(--color-accent); }
 .attention-title { font-weight: 600; }
 .attention-sub { font-size: 0.82rem; color: #8A4B1F; margin-top: 2px; }
 .attention-date { font-size: 0.85rem; color: var(--color-ink-soft); white-space: nowrap; }
 .upcoming-row-wrap {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
-  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm);
+  display: grid; grid-template-columns: 1fr 88px 140px 128px; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); min-height: 58px;
   background: #fff; border: 1px solid var(--color-border);
   transition: box-shadow 0.15s, border-color 0.15s;
 }
 .upcoming-row-wrap:hover { box-shadow: 0 2px 10px rgba(43,37,48,0.08); border-color: var(--color-accent); }
-.upcoming-row-link { flex: 1; min-width: 0; display: block; }
-.upcoming-main { flex: 1; min-width: 0; }
-.upcoming-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.upcoming-customer { font-weight: 600; }
-.upcoming-price { font-weight: 700; color: var(--color-accent); font-size: 0.9rem; }
-.upcoming-items { font-size: 0.82rem; color: var(--color-ink-soft); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upcoming-row-link { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.upcoming-customer { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upcoming-price { font-weight: 700; color: var(--color-accent); font-size: 0.9rem; white-space: nowrap; text-align: left; }
+.upcoming-items { font-size: 0.82rem; color: var(--color-ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .upcoming-payment { color: var(--color-ink-faint); }
 .upcoming-payment.is-unpaid { color: var(--color-danger); font-weight: 600; }
-.upcoming-date { width: 150px; flex-shrink: 0; font-size: 0.88rem; color: var(--color-ink-soft); text-align: left; }
+.upcoming-date { font-size: 0.85rem; color: var(--color-ink-soft); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .upcoming-date em { font-style: normal; color: var(--color-accent); font-weight: 600; }
 .upcoming-row-wrap.is-overdue .upcoming-date em { color: var(--color-danger); }
 .upcoming-row-wrap.is-overdue { border-color: #EBC9C6; background: var(--color-danger-soft); }
 .upcoming-row-wrap.is-today .upcoming-date em, .upcoming-row-wrap.is-soon .upcoming-date em { color: #8A4B1F; }
-@media (max-width: 600px) {
-  .upcoming-row-wrap { flex-wrap: wrap; }
-  .upcoming-date { width: auto; text-align: right; }
+@media (max-width: 700px) {
+  .upcoming-row-wrap { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-height: 0; }
+  .upcoming-price, .upcoming-date { text-align: right; }
+  .quick-status-form .status-select { width: 100%; max-width: 100%; }
 }
 
 .status-pill {
@@ -372,59 +372,39 @@ textarea { resize: vertical; min-height: 70px; }
 .inline-check { display: flex; align-items: center; gap: 5px; font-size: 0.82rem; color: var(--color-ink-soft); white-space: nowrap; }
 .inline-check input { width: auto; }
 
-/* ---------------- לוח שבועי ---------------- */
+/* ---------------- לוח חודשי ---------------- */
 .week-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-5); }
-.week-range { font-weight: 700; }
-.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-3); }
-.week-day {
-  background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-card);
-  padding: var(--space-3); min-height: 160px; display: flex; flex-direction: column;
-}
-.week-day.is-today { border: 2px solid var(--color-accent); box-shadow: 0 4px 16px rgba(109,79,166,0.18); }
-.week-day-head {
-  display: flex; align-items: center; gap: 9px;
-  margin-bottom: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border);
-}
-.week-day-date-badge {
-  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 1rem; background: var(--color-bg-soft); color: var(--color-ink);
-}
-.week-day.is-today .week-day-date-badge { background: var(--color-accent); color: #fff; }
-.week-day-weekday { font-size: 0.82rem; color: var(--color-ink-soft); font-weight: 700; }
-.week-day.is-today .week-day-weekday { color: var(--color-accent); }
-.week-day-weekday .wd-short { display: none; }
-.week-day-body { flex: 1; }
-.week-order {
-  display: flex; flex-direction: column; gap: 4px; padding: 8px 0 8px 8px; margin-bottom: 2px;
-  border-bottom: 1px dashed var(--color-border); font-size: 0.85rem;
-  border-inline-start: 3px solid var(--pill-color); border-radius: 0 6px 6px 0;
-}
-.week-order:last-child { border-bottom: none; }
-.week-order-customer { font-weight: 600; }
-.week-day-empty { color: var(--color-ink-faint); font-size: 0.8rem; padding: 14px 0; text-align: center; }
+.week-range { font-weight: 700; font-family: "Frank Ruhl Libre", "Heebo", serif; font-size: 1.1rem; }
 
-/* לוח שנה אמיתי: 7 עמודות תמיד גלויות יחד, גם במובייל — בלי גלילה אופקית וגם בלי "להתפרק" לרשימה.
-   כדי שזה יישאר קריא ברוחב צר, כל תא מצטמצם (באדג' תאריך קטן יותר, יום קצר, שם לקוח חתוך),
-   וכל יום עמוס מקבל גלילה פנימית קטנה משלו במקום לדחוף את שאר השבוע החוצה. */
-@media (max-width: 900px) {
-  .week-grid { gap: 5px; }
-  .week-day { padding: 8px 6px; min-height: 120px; border-radius: 12px; }
-  .week-day-head { flex-direction: column; gap: 1px; margin-bottom: 6px; padding-bottom: 6px; text-align: center; }
-  .week-day-date-badge { width: 25px; height: 25px; font-size: 0.74rem; }
-  .week-day-weekday { font-size: 0.6rem; }
-  .week-day-weekday .wd-full, .week-day-weekday .today-label { display: none; }
-  .week-day-weekday .wd-short { display: inline; }
-  .week-day-body { max-height: 150px; overflow-y: auto; }
-  .week-order {
-    padding: 4px 0 4px 5px; gap: 1px; font-size: 0.64rem;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .week-order-customer { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .week-order .status-pill { display: none; }
-  .week-day-empty { font-size: 0.6rem; padding: 8px 0; }
+.month-grid { background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
+.month-grid-head { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--color-bg-soft); border-bottom: 1px solid var(--color-border); }
+.month-grid-head span { padding: 10px 4px; text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--color-ink-soft); }
+.month-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); }
+.month-day {
+  min-height: 88px; padding: 7px; display: flex; flex-direction: column; gap: 6px;
+  border-inline-start: 1px solid var(--color-border); border-top: 1px solid var(--color-border);
+  transition: background 0.15s;
 }
-@media (max-width: 480px) {
-  .week-day-date-badge { width: 22px; height: 22px; font-size: 0.68rem; }
-  .week-day { padding: 6px 4px; }
+.month-grid-body .month-day:nth-child(7n+1) { border-inline-start: none; }
+.month-grid-body .month-day:nth-child(-n+7) { border-top: none; }
+.month-day:hover { background: var(--color-bg-soft); }
+.month-day-num { font-size: 0.86rem; font-weight: 700; color: var(--color-ink); }
+.month-day.is-outside { background: var(--color-bg); }
+.month-day.is-outside .month-day-num { color: var(--color-ink-faint); font-weight: 400; }
+.month-day.is-today { background: var(--color-accent-soft); }
+.month-day.is-today:hover { background: var(--color-accent-soft); }
+.month-day.is-today .month-day-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 23px; height: 23px; border-radius: 50%; background: var(--color-accent); color: #fff;
+}
+.month-day-dots { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.month-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--pill-color); flex-shrink: 0; }
+.month-dot-extra { font-size: 0.62rem; color: var(--color-ink-faint); font-weight: 700; }
+
+@media (max-width: 700px) {
+  .month-day { min-height: 54px; padding: 4px; gap: 3px; }
+  .month-day-num { font-size: 0.72rem; }
+  .month-day.is-today .month-day-num { width: 19px; height: 19px; }
+  .month-grid-head span { font-size: 0.68rem; padding: 6px 2px; }
+  .month-dot { width: 7px; height: 7px; }
 }
