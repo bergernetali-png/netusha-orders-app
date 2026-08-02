@@ -5,7 +5,7 @@ const { statusColor, OPEN_STATUSES } = require("../lib/constants");
 
 const WEEKDAY_SHORT = ["א", "ב", "ג", "ד", "ה", "ו", "ש"];
 const MONTH_NAMES = ["ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"];
-const MAX_DOTS_PER_DAY = 4;
+const MAX_NAMES_PER_DAY = 3;
 
 function toISO(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -43,15 +43,21 @@ function renderMonthPage(orders, settings, query) {
     const inMonth = d.getMonth() === month;
     const isToday = iso === today;
     const list = (byDay[iso] || []).slice().sort((a, b) => (a.customerName || "").localeCompare(b.customerName || ""));
-    const shown = list.slice(0, MAX_DOTS_PER_DAY);
+    const shown = list.slice(0, MAX_NAMES_PER_DAY);
     const extra = list.length - shown.length;
+    const cls = `month-day ${inMonth ? "" : "is-outside"} ${isToday ? "is-today" : ""}`;
+    // מספר היום מקשר לרשימה המאוגדת של כל ההזמנות לתאריך הזה; כל שם לקוח/ה הוא קישור נפרד
+    // ישירות להזמנה שלו — כך אפשר גם לראות מיד למי מספקים, וגם לפתוח כל הזמנה בלחיצה אחת.
+    const dayNum = list.length
+      ? `<a href="/orders?date=${iso}" class="month-day-num">${d.getDate()}</a>`
+      : `<span class="month-day-num">${d.getDate()}</span>`;
     return `
-    <div class="month-day ${inMonth ? "" : "is-outside"} ${isToday ? "is-today" : ""}">
-      <span class="month-day-num">${d.getDate()}</span>
+    <div class="${cls}">
+      ${dayNum}
       ${list.length ? `
-      <div class="month-day-dots">
-        ${shown.map(o => `<a href="/orders/${e(o.id)}" class="month-dot" style="--pill-color:${statusColor(o.status)};" title="${e(o.customerName)}"></a>`).join("")}
-        ${extra > 0 ? `<span class="month-dot-extra">+${extra}</span>` : ""}
+      <div class="month-day-names">
+        ${shown.map(o => `<a href="/orders/${e(o.id)}" class="month-order" style="--pill-color:${statusColor(o.status)};" title="${e(o.customerName)}">${e(o.customerName)}</a>`).join("")}
+        ${extra > 0 ? `<a href="/orders?date=${iso}" class="month-order-extra">+${extra} נוספות</a>` : ""}
       </div>` : ""}
     </div>`;
   };

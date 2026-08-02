@@ -8,19 +8,24 @@ const { STATUSES, statusColor, paymentLabel } = require("../lib/constants");
 function renderOrdersList(orders, settings, query) {
   const q = (query.q || "").trim().toLowerCase();
   const statusFilter = query.status || "";
+  const dateFilter = query.date || "";
 
   let filtered = orders.slice();
   if (statusFilter) filtered = filtered.filter(o => o.status === statusFilter);
+  if (dateFilter) filtered = filtered.filter(o => o.deliveryDate === dateFilter);
   if (q) {
     filtered = filtered.filter(o => (o.customerName || "").toLowerCase().includes(q));
   }
   const sortBy = query.sort === "created" ? "createdAt" : "deliveryDate";
-  filtered.sort((a, b) => (b[sortBy] || "").localeCompare(a[sortBy] || ""));
+  filtered.sort((a, b) => dateFilter
+    ? (a.customerName || "").localeCompare(b.customerName || "")
+    : (b[sortBy] || "").localeCompare(a[sortBy] || ""));
 
-  // חוזרים לאותו עמוד ופילטר/חיפוש אחרי עדכון סטטוס מהיר, כדי לא "לאבד" את המסננים שהוגדרו
+  // חוזרים לאותו עמוד ופילטר/חיפוש/תאריך אחרי עדכון סטטוס מהיר, כדי לא "לאבד" את המסננים שהוגדרו
   const returnParams = new URLSearchParams();
   if (query.q) returnParams.set("q", query.q);
   if (statusFilter) returnParams.set("status", statusFilter);
+  if (dateFilter) returnParams.set("date", dateFilter);
   if (query.sort) returnParams.set("sort", query.sort);
   const returnTo = `/orders${returnParams.toString() ? "?" + returnParams.toString() : ""}`;
 
@@ -51,6 +56,12 @@ function renderOrdersList(orders, settings, query) {
   };
 
   const content = `
+    ${dateFilter ? `
+    <div class="panel panel-alert" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div class="panel-head" style="margin:0;">${icons.calendar}<h2>הזמנות לאספקה בתאריך ${e(formatDate(dateFilter))} (${filtered.length})</h2></div>
+      <a href="/orders" class="btn btn-secondary btn-sm">איפוס וחזרה לכל ההזמנות</a>
+    </div>` : ""}
+
     <div class="list-toolbar">
       <form method="GET" action="/orders" class="search-form">
         <span class="search-icon">${icons.search}</span>
@@ -80,7 +91,7 @@ function renderOrdersList(orders, settings, query) {
     <a href="/orders/new" class="btn btn-primary btn-fab">${icons.plus} הזמנה חדשה</a>
   `;
 
-  return layout({ title: "כל ההזמנות", active: "orders", content, businessName: settings.businessName });
+  return layout({ title: dateFilter ? `הזמנות ל-${formatDate(dateFilter)}` : "כל ההזמנות", active: "orders", content, businessName: settings.businessName });
 }
 
 module.exports = { renderOrdersList };

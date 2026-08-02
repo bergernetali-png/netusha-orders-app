@@ -381,14 +381,15 @@ textarea { resize: vertical; min-height: 70px; }
 .month-grid-head span { padding: 10px 4px; text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--color-ink-soft); }
 .month-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); }
 .month-day {
-  min-height: 88px; padding: 7px; display: flex; flex-direction: column; gap: 6px;
+  min-height: 96px; padding: 7px; display: flex; flex-direction: column; gap: 6px;
   border-inline-start: 1px solid var(--color-border); border-top: 1px solid var(--color-border);
   transition: background 0.15s;
 }
 .month-grid-body .month-day:nth-child(7n+1) { border-inline-start: none; }
 .month-grid-body .month-day:nth-child(-n+7) { border-top: none; }
 .month-day:hover { background: var(--color-bg-soft); }
-.month-day-num { font-size: 0.86rem; font-weight: 700; color: var(--color-ink); }
+.month-day-num { font-size: 0.86rem; font-weight: 700; color: var(--color-ink); align-self: flex-start; }
+a.month-day-num:hover { color: var(--color-accent); text-decoration: underline; }
 .month-day.is-outside { background: var(--color-bg); }
 .month-day.is-outside .month-day-num { color: var(--color-ink-faint); font-weight: 400; }
 .month-day.is-today { background: var(--color-accent-soft); }
@@ -397,14 +398,22 @@ textarea { resize: vertical; min-height: 70px; }
   display: inline-flex; align-items: center; justify-content: center;
   width: 23px; height: 23px; border-radius: 50%; background: var(--color-accent); color: #fff;
 }
-.month-day-dots { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.month-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--pill-color); flex-shrink: 0; }
-.month-dot-extra { font-size: 0.62rem; color: var(--color-ink-faint); font-weight: 700; }
+.month-day-names { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+.month-order {
+  font-size: 0.72rem; font-weight: 600; color: var(--color-ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  border-inline-start: 3px solid var(--pill-color); padding-inline-start: 6px; border-radius: 0 5px 5px 0;
+}
+.month-order:hover { background: color-mix(in srgb, var(--pill-color) 14%, white); color: var(--pill-color); }
+.month-order-extra { font-size: 0.68rem; color: var(--color-ink-faint); font-weight: 700; padding-inline-start: 6px; }
+.month-order-extra:hover { color: var(--color-accent); }
 
 @media (max-width: 700px) {
-  .month-day { min-height: 54px; padding: 4px; gap: 3px; }
+  .month-day { min-height: 76px; padding: 4px; gap: 3px; }
   .month-day-num { font-size: 0.72rem; }
   .month-day.is-today .month-day-num { width: 19px; height: 19px; }
   .month-grid-head span { font-size: 0.68rem; padding: 6px 2px; }
-  .month-dot { width: 7px; height: 7px; }
+  .month-day-names { max-height: 56px; gap: 2px; }
+  .month-order { font-size: 0.58rem; padding-inline-start: 4px; border-inline-start-width: 2px; }
+  .month-order-extra { font-size: 0.56rem; }
 }
