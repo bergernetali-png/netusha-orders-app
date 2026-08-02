@@ -28,15 +28,16 @@ function renderDashboard(orders, settings) {
     .slice(0, 8);
 
   // סטטיסטיקות החודש (לפי תאריך יצירה, לא כולל הזמנות שבוטלו)
+  // אחוז הרווח מחושב כאן כיחס כולל (סה"כ רווח חלקי סה"כ מכירה של החודש) ולא כממוצע של אחוזים
+  // בין ההזמנות — כדי שהוא יתאים תמיד למספרים בשקלים שמוצגים לידו, גם כשהזמנות שונות מאוד בגודלן.
   const monthOrders = orders.filter(o => (o.createdAt || "").slice(0, 7) === thisMonthKey && o.status !== "cancelled");
-  let monthRevenue = 0, monthProfit = 0, marginSum = 0, marginCount = 0;
+  let monthRevenue = 0, monthProfit = 0;
   monthOrders.forEach(o => {
     const c = calcOrder(o, settings);
     monthRevenue += c.sellTotal;
     monthProfit += c.profit;
-    if (c.sellTotal > 0) { marginSum += c.marginPct; marginCount++; }
   });
-  const avgMargin = marginCount ? (marginSum / marginCount) : 0;
+  const avgMargin = monthRevenue > 0 ? (monthProfit / monthRevenue) * 100 : 0;
 
   const statCard = (label, value, opts) => {
     opts = opts || {};
