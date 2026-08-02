@@ -3,7 +3,7 @@ const { layout } = require("./layout");
 const icons = require("./icons");
 const { escapeHtml: e, formatPrice, formatDate, todayISO, daysDiff } = require("../lib/util");
 const { calcOrder } = require("../lib/calc");
-const { STATUSES, statusLabel, statusColor, paymentLabel, OPEN_STATUSES, MARGIN_WARNING_THRESHOLD } = require("../lib/constants");
+const { STATUSES, statusLabel, statusColor, paymentLabel, OPEN_STATUSES } = require("../lib/constants");
 
 function renderDashboard(orders, settings) {
   const today = todayISO();
@@ -15,12 +15,6 @@ function renderDashboard(orders, settings) {
   const needsAttention = openOrders.filter(o =>
     (o.items || []).some(it => it && it.supplyStatus === "needed")
   );
-
-  // רווחיות נמוכה — תופס תמחור-חסר לפני שמתחייבים ליצור, לא רק אחרי
-  const lowMargin = openOrders.filter(o => {
-    const c = calcOrder(o, settings);
-    return c.sellTotal > 0 && c.marginPct < MARGIN_WARNING_THRESHOLD;
-  });
 
   // טרם שולם במלואו — בכוונה לא מוגבל להזמנות פתוחות: גם הזמנה שכבר סופקה
   // אבל עדיין לא שולמה במלואו חייבת להישאר גלויה, כדי שלא "תיעלם" מהראש.
@@ -74,18 +68,6 @@ function renderDashboard(orders, settings) {
         <div class="attention-sub">חסר במלאי: ${e(missing)}</div>
       </div>
       <div class="attention-date">${o.deliveryDate ? formatDate(o.deliveryDate) : ""}</div>
-    </a>`;
-  };
-
-  const lowMarginRow = (o) => {
-    const c = calcOrder(o, settings);
-    return `
-    <a href="/orders/${e(o.id)}" class="attention-row">
-      <div>
-        <div class="attention-title">#${o.orderNumber} · ${e(o.customerName)}</div>
-        <div class="attention-sub">רווח ${formatPrice(c.profit)} מתוך ${formatPrice(c.sellTotal)}</div>
-      </div>
-      <div class="attention-date">${c.marginPct.toFixed(0)}% רווח</div>
     </a>`;
   };
 
@@ -144,12 +126,6 @@ function renderDashboard(orders, settings) {
     <div class="panel panel-alert">
       <div class="panel-head">${icons.alert}<h2>דורש תשומת לב — צריך להזמין מספק</h2></div>
       <div class="attention-list">${needsAttention.map(attentionRow).join("")}</div>
-    </div>` : ""}
-
-    ${lowMargin.length ? `
-    <div class="panel panel-alert">
-      <div class="panel-head">${icons.alert}<h2>רווחיות נמוכה (מתחת ל-${MARGIN_WARNING_THRESHOLD}%)</h2></div>
-      <div class="attention-list">${lowMargin.map(lowMarginRow).join("")}</div>
     </div>` : ""}
 
     <div class="panel">

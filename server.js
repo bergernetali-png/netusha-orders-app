@@ -269,14 +269,23 @@ router.post("/settings", requireAuth(async (req, res) => {
   send(res, 200, renderSettings(settings, ordersCount, { type: "success", message: "ההגדרות נשמרו." }));
 }));
 
-/* ---------- ייצוא / גיבוי ---------- */
-router.get("/export/backup.json", requireAuth((req, res) => {
+/* ---------- ייצוא / גיבוי ----------
+   נתיב הגיבוי נגיש גם עם התחברות רגילה (לשימוש ידני מהדפדפן), וגם עם טוקן ייעודי בפרמטר
+   ?token= שמוגדר ב-BACKUP_TOKEN — כדי שגיבוי אוטומטי מתוזמן יוכל להוריד אותו בלי לשמור
+   את סיסמת הכניסה הרגילה. אם BACKUP_TOKEN לא מוגדר בסביבה, הטוקן פשוט לא עובד והנתיב
+   דורש התחברות רגילה כמו קודם. */
+router.get("/export/backup.json", (req, res, params, query) => {
+  const validToken = Boolean(process.env.BACKUP_TOKEN) && query.token === process.env.BACKUP_TOKEN;
+  if (!validToken && !auth.isAuthenticated(req)) {
+    if (query.token !== undefined) return send(res, 401, "Unauthorized");
+    return redirect(res, "/login");
+  }
   const payload = { exportedAt: new Date().toISOString(), settings: db.getSettings(), orders: db.all("orders") };
   send(res, 200, JSON.stringify(payload, null, 2), {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Disposition": `attachment; filename="netusha-orders-backup-${new Date().toISOString().slice(0, 10)}.json"`
   });
-}));
+});
 
 router.get("/export/orders.csv", requireAuth((req, res) => {
   const orders = db.all("orders");
