@@ -48,7 +48,7 @@ function renderOrdersList(orders, settings, query) {
         </select>
       </form>
       <a href="${href}" class="order-cell">${e(paymentLabel(o.paymentStatus))}</a>
-      <a href="${href}" class="order-cell order-cell-profit ${c.profit < 0 ? "is-negative" : ""}">${formatPrice(c.profit)}</a>
+      <a href="${href}" class="order-cell order-cell-profit ${c.productProfit < 0 ? "is-negative" : ""}">${formatPrice(c.productProfit)}</a>
       <form method="POST" action="/orders/${e(o.id)}/delete" class="row-delete-form" data-confirm="למחוק את ההזמנה #${e(o.orderNumber)} (${e(o.customerName)}) לצמיתות? לא ניתן לשחזר.">
         <button type="submit" class="row-delete-btn" title="מחיקת הזמנה" aria-label="מחיקת הזמנה">${icons.trash}</button>
       </form>

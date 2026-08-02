@@ -28,14 +28,15 @@ function renderDashboard(orders, settings) {
     .slice(0, 8);
 
   // סטטיסטיקות החודש (לפי תאריך יצירה, לא כולל הזמנות שבוטלו)
-  // אחוז הרווח מחושב כאן כיחס כולל (סה"כ רווח חלקי סה"כ מכירה של החודש) ולא כממוצע של אחוזים
-  // בין ההזמנות — כדי שהוא יתאים תמיד למספרים בשקלים שמוצגים לידו, גם כשהזמנות שונות מאוד בגודלן.
+  // "רווח" כאן הוא רווח המוצר (תכל'ס — לפני זמן עבודה): מחיר מכירה פחות עלויות ישירות בלבד.
+  // עלות זמן העבודה נשארת כלי תמחור שרואים בפירוט בתוך כל הזמנה, ולא מקוזזת מהמספר הראשי כאן.
+  // האחוז מחושב כיחס כולל (סה"כ רווח חלקי סה"כ מכירה) ולא כממוצע אחוזים — כדי שיתאים למספרים בשקלים.
   const monthOrders = orders.filter(o => (o.createdAt || "").slice(0, 7) === thisMonthKey && o.status !== "cancelled");
   let monthRevenue = 0, monthProfit = 0;
   monthOrders.forEach(o => {
     const c = calcOrder(o, settings);
     monthRevenue += c.sellTotal;
-    monthProfit += c.profit;
+    monthProfit += c.productProfit;
   });
   const avgMargin = monthRevenue > 0 ? (monthProfit / monthRevenue) * 100 : 0;
 

@@ -309,13 +309,19 @@ router.get("/export/backup-view", (req, res, params, query) => {
 router.get("/export/orders.csv", requireAuth((req, res) => {
   const orders = db.all("orders");
   const settings = db.getSettings();
-  const header = ["מספר הזמנה", "תאריך יצירה", "לקוח/ה", "טלפון", "תאריך אספקה", "סטטוס", "סטטוס תשלום", "סה\"כ מכירה", "עלות כוללת", "רווח", "אחוז רווח", "קבלה הוצאה"];
+  // "רווח" כאן הוא רווח המוצר (תכל'ס — לפני זמן עבודה), כמו בדשבורד וברשימת ההזמנות.
+  // עלות זמן העבודה ורווח נטו אחריה נשארים כעמודות נפרדות בסוף, לשימוש בתמחור אם צריך.
+  const header = [
+    "מספר הזמנה", "תאריך יצירה", "לקוח/ה", "טלפון", "תאריך אספקה", "סטטוס", "סטטוס תשלום",
+    "סה\"כ מכירה", "עלות מוצר", "רווח", "אחוז רווח", "עלות זמן עבודה", "רווח נטו (אחרי זמן עבודה)", "קבלה הוצאה"
+  ];
   const rows = orders.slice().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).map(o => {
     const c = calcOrder(o, settings);
     return [
       o.orderNumber, (o.createdAt || "").slice(0, 10), o.customerName, o.customerPhone,
       o.deliveryDate || "", statusLabel(o.status), paymentLabel(o.paymentStatus),
-      c.sellTotal.toFixed(2), c.totalCost.toFixed(2), c.profit.toFixed(2), c.marginPct.toFixed(0) + "%",
+      c.sellTotal.toFixed(2), c.productCost.toFixed(2), c.productProfit.toFixed(2), c.productMarginPct.toFixed(0) + "%",
+      c.prepCost.toFixed(2), c.profit.toFixed(2),
       o.receiptIssued ? "כן" : "לא"
     ];
   });
