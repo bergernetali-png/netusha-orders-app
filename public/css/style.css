@@ -278,20 +278,21 @@ textarea { resize: vertical; min-height: 70px; }
 
 /* ---------------- Buttons ---------------- */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  border: none; border-radius: var(--radius-sm); padding: 12px 22px; font-weight: 600; font-size: 0.92rem;
-  cursor: pointer; transition: background 0.15s, transform 0.08s; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  border: none; border-radius: 14px; padding: 14px 26px; font-weight: 700; font-size: 0.97rem;
+  cursor: pointer; transition: background 0.15s, transform 0.08s, box-shadow 0.15s; min-height: 48px;
+  letter-spacing: 0.01em;
 }
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--color-accent); color: #fff; }
-.btn-primary:hover { background: #7A58D6; }
-.btn-secondary { background: #fff; color: var(--color-ink); border: 1px solid var(--color-border); }
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--color-accent); color: #fff; box-shadow: 0 6px 16px rgba(109,79,166,0.32); }
+.btn-primary:hover { background: #7A58D6; box-shadow: 0 6px 18px rgba(109,79,166,0.4); }
+.btn-secondary { background: #fff; color: var(--color-ink); border: 1.5px solid var(--color-border); }
 .btn-secondary:hover { background: var(--color-bg-soft); }
 .btn-danger { background: var(--color-danger-soft); color: var(--color-danger); }
 .btn-danger:hover { background: #F5DBD9; }
-.btn-sm { padding: 9px 15px; font-size: 0.85rem; min-height: 38px; }
+.btn-sm { padding: 10px 18px; font-size: 0.86rem; min-height: 40px; border-radius: 12px; }
 .btn-block { width: 100%; }
-.btn-fab { position: fixed; bottom: 24px; inset-inline-end: 24px; box-shadow: 0 8px 24px rgba(143,111,232,0.4); z-index: 20; }
+.btn-fab { position: fixed; bottom: 24px; inset-inline-end: 24px; box-shadow: 0 8px 24px rgba(109,79,166,0.4); z-index: 20; }
 .btn[hidden] { display: none; }
 @media (max-width: 860px) {
   .btn-fab { display: none; } /* הפעולה הזו זמינה בניווט התחתון */
@@ -336,12 +337,39 @@ textarea { resize: vertical; min-height: 70px; }
 .week-nav { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-5); }
 .week-range { font-weight: 700; }
 .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-3); }
-@media (max-width: 900px) { .week-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .week-grid { grid-template-columns: 1fr; } }
-.week-day { background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-card); padding: var(--space-3); min-height: 140px; }
-.week-day.is-today { border: 2px solid var(--color-accent); }
-.week-day-head { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--color-ink-soft); font-weight: 700; margin-bottom: var(--space-2); padding-bottom: 8px; border-bottom: 1px solid var(--color-border); }
-.week-order { display: flex; flex-direction: column; gap: 4px; padding: 7px 0; border-bottom: 1px dashed var(--color-border); font-size: 0.85rem; }
+.week-day {
+  background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-card);
+  padding: var(--space-3); min-height: 160px; display: flex; flex-direction: column;
+}
+.week-day.is-today { border: 2px solid var(--color-accent); box-shadow: 0 4px 16px rgba(109,79,166,0.18); }
+.week-day-head {
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: var(--space-3); padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-border);
+}
+.week-day-date-badge {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1rem; background: var(--color-bg-soft); color: var(--color-ink);
+}
+.week-day.is-today .week-day-date-badge { background: var(--color-accent); color: #fff; }
+.week-day-weekday { font-size: 0.82rem; color: var(--color-ink-soft); font-weight: 700; }
+.week-day.is-today .week-day-weekday { color: var(--color-accent); }
+.week-day-body { flex: 1; }
+.week-order { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px dashed var(--color-border); font-size: 0.85rem; }
 .week-order:last-child { border-bottom: none; }
 .week-order-customer { font-weight: 600; }
-.week-day-empty { color: var(--color-ink-faint); font-size: 0.8rem; padding: 10px 0; text-align: center; }
+.week-day-empty { color: var(--color-ink-faint); font-size: 0.8rem; padding: 14px 0; text-align: center; }
+
+/* מתחת לרוחב שולחני — במקום שהשבוע "יתפרק" לרשימה אנכית, הופך לרצועה אופקית שגוללים בה,
+   כדי לשמור על תחושת "לוח שנה" גם במובייל ולא להיראות כמו טופס עם 7 סעיפים */
+@media (max-width: 900px) {
+  .week-grid {
+    display: flex; grid-template-columns: none; gap: var(--space-3);
+    overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px; margin: 0 calc(-1 * var(--space-4)); padding-inline: var(--space-4);
+  }
+  .week-day { flex: 0 0 76%; scroll-snap-align: start; min-width: 220px; }
+}
+@media (max-width: 560px) {
+  .week-day { flex-basis: 82%; }
+}

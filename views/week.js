@@ -28,17 +28,20 @@ function renderWeekPage(orders, settings, query) {
   const dayCard = (d, i) => {
     const list = byDay[d].slice().sort((a, b) => (a.customerName || "").localeCompare(b.customerName || ""));
     const isToday = d === today;
+    const dayNum = parseInt(d.split("-")[2], 10);
     return `
     <div class="week-day ${isToday ? "is-today" : ""}">
       <div class="week-day-head">
-        <span>${WEEKDAY_NAMES[i]}</span>
-        <span class="week-day-date">${formatDate(d).split(" ").slice(0, 2).join(" ")}</span>
+        <span class="week-day-date-badge">${dayNum}</span>
+        <span class="week-day-weekday">${WEEKDAY_NAMES[i]}${isToday ? " · היום" : ""}</span>
       </div>
-      ${list.length ? list.map(o => `
-        <a href="/orders/${e(o.id)}" class="week-order">
-          <span class="week-order-customer">${e(o.customerName)}</span>
-          <span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span>
-        </a>`).join("") : `<div class="week-day-empty">אין אספקות</div>`}
+      <div class="week-day-body">
+        ${list.length ? list.map(o => `
+          <a href="/orders/${e(o.id)}" class="week-order">
+            <span class="week-order-customer">${e(o.customerName)}</span>
+            <span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span>
+          </a>`).join("") : `<div class="week-day-empty">אין אספקות</div>`}
+      </div>
     </div>`;
   };
 
