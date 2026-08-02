@@ -274,17 +274,36 @@ router.post("/settings", requireAuth(async (req, res) => {
    ?token= שמוגדר ב-BACKUP_TOKEN — כדי שגיבוי אוטומטי מתוזמן יוכל להוריד אותו בלי לשמור
    את סיסמת הכניסה הרגילה. אם BACKUP_TOKEN לא מוגדר בסביבה, הטוקן פשוט לא עובד והנתיב
    דורש התחברות רגילה כמו קודם. */
-router.get("/export/backup.json", (req, res, params, query) => {
+function checkBackupAccess(req, query) {
   const validToken = Boolean(process.env.BACKUP_TOKEN) && query.token === process.env.BACKUP_TOKEN;
-  if (!validToken && !auth.isAuthenticated(req)) {
+  return validToken || auth.isAuthenticated(req);
+}
+function backupJSON() {
+  const payload = { exportedAt: new Date().toISOString(), settings: db.getSettings(), orders: db.all("orders") };
+  return JSON.stringify(payload, null, 2);
+}
+
+router.get("/export/backup.json", (req, res, params, query) => {
+  if (!checkBackupAccess(req, query)) {
     if (query.token !== undefined) return send(res, 401, "Unauthorized");
     return redirect(res, "/login");
   }
-  const payload = { exportedAt: new Date().toISOString(), settings: db.getSettings(), orders: db.all("orders") };
-  send(res, 200, JSON.stringify(payload, null, 2), {
+  send(res, 200, backupJSON(), {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Disposition": `attachment; filename="netusha-orders-backup-${new Date().toISOString().slice(0, 10)}.json"`
   });
+});
+
+// גרסת HTML פשוטה של אותו גיבוי (JSON בתוך <pre>) — משמשת רק את הגיבוי האוטומטי המתוזמן,
+// כדי שכלי שקורא דפי אינטרנט (ולא מוריד קבצים) יוכל לראות את התוכן כטקסט גלוי בעמוד.
+router.get("/export/backup-view", (req, res, params, query) => {
+  if (!checkBackupAccess(req, query)) {
+    if (query.token !== undefined) return send(res, 401, "Unauthorized");
+    return redirect(res, "/login");
+  }
+  const json = backupJSON()
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  send(res, 200, `<!DOCTYPE html><html lang="he"><head><meta charset="UTF-8"><title>גיבוי הזמנות NETUSHA</title></head><body><pre>${json}</pre></body></html>`);
 });
 
 router.get("/export/orders.csv", requireAuth((req, res) => {
