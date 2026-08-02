@@ -1,0 +1,14 @@
+{
+  "name": "netusha-orders",
+  "version": "1.0.0",
+  "description": "מערכת ניהול הזמנות פנימית ל-NETUSHA — Node.js טהור, ללא תלויות חיצוניות",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

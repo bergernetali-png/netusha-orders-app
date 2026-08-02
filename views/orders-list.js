@@ -1,0 +1,75 @@
+"use strict";
+const { layout } = require("./layout");
+const icons = require("./icons");
+const { escapeHtml: e, formatPrice, formatDate } = require("../lib/util");
+const { calcOrder } = require("../lib/calc");
+const { STATUSES, statusLabel, statusColor, paymentLabel } = require("../lib/constants");
+
+function renderOrdersList(orders, settings, query) {
+  const q = (query.q || "").trim().toLowerCase();
+  const statusFilter = query.status || "";
+
+  let filtered = orders.slice();
+  if (statusFilter) filtered = filtered.filter(o => o.status === statusFilter);
+  if (q) {
+    filtered = filtered.filter(o => (o.customerName || "").toLowerCase().includes(q));
+  }
+  const sortBy = query.sort === "created" ? "createdAt" : "deliveryDate";
+  filtered.sort((a, b) => (b[sortBy] || "").localeCompare(a[sortBy] || ""));
+
+  const row = (o) => {
+    const c = calcOrder(o, settings);
+    const unpaid = o.status !== "cancelled" && o.paymentStatus !== "paid";
+    return `
+    <div class="order-row-wrap">
+      <a href="/orders/${e(o.id)}" class="order-row">
+        <span class="order-cell order-cell-num">#${o.orderNumber}</span>
+        <span class="order-cell order-cell-customer">
+          <span class="order-customer-name">${unpaid ? `<span class="unpaid-flag" title="טרם שולם במלואו">✱</span> ` : ""}${e(o.customerName)}</span>
+          <span class="order-customer-phone">${e(o.customerPhone)}</span>
+        </span>
+        <span class="order-cell">${o.deliveryDate ? formatDate(o.deliveryDate) : "—"}</span>
+        <span class="order-cell"><span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span></span>
+        <span class="order-cell">${paymentLabel(o.paymentStatus)}</span>
+        <span class="order-cell order-cell-profit ${c.profit < 0 ? "is-negative" : ""}">${formatPrice(c.profit)}</span>
+      </a>
+      <form method="POST" action="/orders/${e(o.id)}/delete" class="row-delete-form" data-confirm="למחוק את ההזמנה #${e(o.orderNumber)} (${e(o.customerName)}) לצמיתות? לא ניתן לשחזר.">
+        <button type="submit" class="row-delete-btn" title="מחיקת הזמנה" aria-label="מחיקת הזמנה">${icons.trash}</button>
+      </form>
+    </div>`;
+  };
+
+  const content = `
+    <div class="list-toolbar">
+      <form method="GET" action="/orders" class="search-form">
+        <span class="search-icon">${icons.search}</span>
+        <input type="search" name="q" value="${e(query.q || "")}" placeholder="חיפוש לפי שם לקוח/ה" />
+        ${statusFilter ? `<input type="hidden" name="status" value="${e(statusFilter)}" />` : ""}
+        <button type="submit" class="btn btn-secondary btn-sm">חיפוש</button>
+      </form>
+      <div class="status-filters">
+        <a href="/orders${q ? `?q=${encodeURIComponent(query.q)}` : ""}" class="chip ${!statusFilter ? "is-active" : ""}">הכל</a>
+        ${STATUSES.map(s => `<a href="/orders?status=${e(s.value)}${q ? `&q=${encodeURIComponent(query.q)}` : ""}" class="chip ${statusFilter === s.value ? "is-active" : ""}">${e(s.label)}</a>`).join("")}
+      </div>
+      <a href="/export/orders.csv" class="btn btn-secondary btn-sm">${icons.download} ייצוא ל-CSV</a>
+    </div>
+
+    <div class="order-table">
+      <div class="order-row order-row-head">
+        <span class="order-cell order-cell-num">מס'</span>
+        <span class="order-cell order-cell-customer">לקוח/ה</span>
+        <span class="order-cell">תאריך אספקה</span>
+        <span class="order-cell">סטטוס</span>
+        <span class="order-cell">תשלום</span>
+        <span class="order-cell order-cell-profit">רווח</span>
+      </div>
+      ${filtered.length ? filtered.map(row).join("") : `<p class="empty-note">לא נמצאו הזמנות תואמות.</p>`}
+    </div>
+
+    <a href="/orders/new" class="btn btn-primary btn-fab">${icons.plus} הזמנה חדשה</a>
+  `;
+
+  return layout({ title: "כל ההזמנות", active: "orders", content, businessName: settings.businessName });
+}
+
+module.exports = { renderOrdersList };
