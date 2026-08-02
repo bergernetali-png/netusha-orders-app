@@ -3,7 +3,7 @@ const { layout } = require("./layout");
 const icons = require("./icons");
 const { escapeHtml: e, formatPrice, formatDate } = require("../lib/util");
 const { calcOrder } = require("../lib/calc");
-const { STATUSES, statusLabel, statusColor, paymentLabel } = require("../lib/constants");
+const { STATUSES, statusColor, paymentLabel } = require("../lib/constants");
 
 function renderOrdersList(orders, settings, query) {
   const q = (query.q || "").trim().toLowerCase();
@@ -17,22 +17,33 @@ function renderOrdersList(orders, settings, query) {
   const sortBy = query.sort === "created" ? "createdAt" : "deliveryDate";
   filtered.sort((a, b) => (b[sortBy] || "").localeCompare(a[sortBy] || ""));
 
+  // חוזרים לאותו עמוד ופילטר/חיפוש אחרי עדכון סטטוס מהיר, כדי לא "לאבד" את המסננים שהוגדרו
+  const returnParams = new URLSearchParams();
+  if (query.q) returnParams.set("q", query.q);
+  if (statusFilter) returnParams.set("status", statusFilter);
+  if (query.sort) returnParams.set("sort", query.sort);
+  const returnTo = `/orders${returnParams.toString() ? "?" + returnParams.toString() : ""}`;
+
   const row = (o) => {
     const c = calcOrder(o, settings);
     const unpaid = o.status !== "cancelled" && o.paymentStatus !== "paid";
+    const href = `/orders/${e(o.id)}`;
     return `
-    <div class="order-row-wrap">
-      <a href="/orders/${e(o.id)}" class="order-row">
-        <span class="order-cell order-cell-num">#${o.orderNumber}</span>
-        <span class="order-cell order-cell-customer">
-          <span class="order-customer-name">${unpaid ? `<span class="unpaid-flag" title="טרם שולם במלואו">✱</span> ` : ""}${e(o.customerName)}</span>
-          <span class="order-customer-phone">${e(o.customerPhone)}</span>
-        </span>
-        <span class="order-cell">${o.deliveryDate ? formatDate(o.deliveryDate) : "—"}</span>
-        <span class="order-cell"><span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span></span>
-        <span class="order-cell">${paymentLabel(o.paymentStatus)}</span>
-        <span class="order-cell order-cell-profit ${c.profit < 0 ? "is-negative" : ""}">${formatPrice(c.profit)}</span>
+    <div class="order-row order-row-wrap">
+      <a href="${href}" class="order-cell order-cell-num">#${o.orderNumber}</a>
+      <a href="${href}" class="order-cell order-cell-customer">
+        <span class="order-customer-name">${unpaid ? `<span class="unpaid-flag" title="טרם שולם במלואו">✱</span> ` : ""}${e(o.customerName)}</span>
+        <span class="order-customer-phone">${e(o.customerPhone)}</span>
       </a>
+      <a href="${href}" class="order-cell">${o.deliveryDate ? formatDate(o.deliveryDate) : "—"}</a>
+      <form method="POST" action="/orders/${e(o.id)}/status" class="order-cell quick-status-form">
+        <input type="hidden" name="returnTo" value="${e(returnTo)}" />
+        <select name="status" class="status-select" style="--pill-color:${statusColor(o.status)};" aria-label="עדכון סטטוס הזמנה">
+          ${STATUSES.map(s => `<option value="${e(s.value)}" ${o.status === s.value ? "selected" : ""}>${e(s.label)}</option>`).join("")}
+        </select>
+      </form>
+      <a href="${href}" class="order-cell">${e(paymentLabel(o.paymentStatus))}</a>
+      <a href="${href}" class="order-cell order-cell-profit ${c.profit < 0 ? "is-negative" : ""}">${formatPrice(c.profit)}</a>
       <form method="POST" action="/orders/${e(o.id)}/delete" class="row-delete-form" data-confirm="למחוק את ההזמנה #${e(o.orderNumber)} (${e(o.customerName)}) לצמיתות? לא ניתן לשחזר.">
         <button type="submit" class="row-delete-btn" title="מחיקת הזמנה" aria-label="מחיקת הזמנה">${icons.trash}</button>
       </form>

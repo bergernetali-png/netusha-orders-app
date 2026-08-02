@@ -3,7 +3,7 @@ const { layout } = require("./layout");
 const icons = require("./icons");
 const { escapeHtml: e, formatPrice, formatDate, todayISO, daysDiff } = require("../lib/util");
 const { calcOrder } = require("../lib/calc");
-const { statusLabel, statusColor, paymentLabel, OPEN_STATUSES, MARGIN_WARNING_THRESHOLD } = require("../lib/constants");
+const { STATUSES, statusLabel, statusColor, paymentLabel, OPEN_STATUSES, MARGIN_WARNING_THRESHOLD } = require("../lib/constants");
 
 function renderDashboard(orders, settings) {
   const today = todayISO();
@@ -44,12 +44,26 @@ function renderDashboard(orders, settings) {
   });
   const avgMargin = marginCount ? (marginSum / marginCount) : 0;
 
-  const statCard = (label, value, sub) => `
-    <div class="stat-card">
-      <div class="stat-label">${e(label)}</div>
+  const statCard = (label, value, opts) => {
+    opts = opts || {};
+    return `
+    <div class="stat-card" style="--stat-color:${opts.color || "var(--color-accent)"};">
+      <div class="stat-card-head">
+        <span class="stat-icon">${opts.icon || ""}</span>
+        <span class="stat-label">${e(label)}</span>
+      </div>
       <div class="stat-value">${value}</div>
-      ${sub ? `<div class="stat-sub">${e(sub)}</div>` : ""}
+      ${opts.sub ? `<div class="stat-sub">${e(opts.sub)}</div>` : ""}
     </div>`;
+  };
+
+  const statusQuickSelect = (o, returnTo) => `
+    <form method="POST" action="/orders/${e(o.id)}/status" class="quick-status-form">
+      <input type="hidden" name="returnTo" value="${e(returnTo)}" />
+      <select name="status" class="status-select" style="--pill-color:${statusColor(o.status)};" aria-label="עדכון סטטוס הזמנה">
+        ${STATUSES.map(s => `<option value="${e(s.value)}" ${o.status === s.value ? "selected" : ""}>${e(s.label)}</option>`).join("")}
+      </select>
+    </form>`;
 
   const attentionRow = (o) => {
     const missing = (o.items || []).filter(it => it && it.supplyStatus === "needed").map(it => it.name).join(", ");
@@ -104,28 +118,30 @@ function renderDashboard(orders, settings) {
     const c = calcOrder(o, settings);
     const isPaid = o.paymentStatus === "paid";
     return `
-    <a href="/orders/${e(o.id)}" class="upcoming-row ${urgency}">
-      <div class="upcoming-main">
-        <div class="upcoming-top">
-          <span class="upcoming-customer">${e(o.customerName)}</span>
-          <span class="upcoming-price">${formatPrice(c.sellTotal)}</span>
-          <span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span>
+    <div class="upcoming-row-wrap ${urgency}">
+      <a href="/orders/${e(o.id)}" class="upcoming-row-link">
+        <div class="upcoming-main">
+          <div class="upcoming-top">
+            <span class="upcoming-customer">${e(o.customerName)}</span>
+            <span class="upcoming-price">${formatPrice(c.sellTotal)}</span>
+          </div>
+          <div class="upcoming-items">
+            ${e(itemsSummary || "—")}
+            <span class="upcoming-payment ${isPaid ? "" : "is-unpaid"}">· ${e(paymentLabel(o.paymentStatus))}</span>
+          </div>
         </div>
-        <div class="upcoming-items">
-          ${e(itemsSummary || "—")}
-          <span class="upcoming-payment ${isPaid ? "" : "is-unpaid"}">· ${e(paymentLabel(o.paymentStatus))}</span>
-        </div>
-      </div>
-      <span class="upcoming-date">${formatDate(o.deliveryDate)}${urgencyLabel ? ` <em>· ${e(urgencyLabel)}</em>` : ""}</span>
-    </a>`;
+      </a>
+      ${statusQuickSelect(o, "/")}
+      <a href="/orders/${e(o.id)}" class="upcoming-date">${formatDate(o.deliveryDate)}${urgencyLabel ? ` <em>· ${e(urgencyLabel)}</em>` : ""}</a>
+    </div>`;
   };
 
   const content = `
     <div class="stat-grid">
-      ${statCard("הזמנות פתוחות", openOrders.length)}
-      ${statCard("הכנסות החודש", formatPrice(monthRevenue))}
-      ${statCard("רווח החודש", formatPrice(monthProfit))}
-      ${statCard("אחוז רווח ממוצע", `${avgMargin.toFixed(0)}%`)}
+      ${statCard("הזמנות פתוחות", openOrders.length, { icon: icons.list, color: "#6D4FA6" })}
+      ${statCard("הכנסות החודש", formatPrice(monthRevenue), { icon: icons.coins, color: "#4FA37A" })}
+      ${statCard("רווח החודש", formatPrice(monthProfit), { icon: icons.trend, color: "#D98CC0" })}
+      ${statCard("אחוז רווח ממוצע", `${avgMargin.toFixed(0)}%`, { icon: icons.percent, color: "#E0A458" })}
     </div>
 
     ${needsAttention.length ? `

@@ -6,6 +6,7 @@
     initConfirmSubmit();
     initSupplyStatusToggle(document);
     initLiveProfitCalc();
+    initQuickStatusForms();
   });
 
   /* ---------------- ניווט מובייל ---------------- */
@@ -81,11 +82,27 @@
     });
   }
 
-  /* ---------------- אישור לפני מחיקה ---------------- */
+  /* ---------------- אישור לפני מחיקה ----------------
+     מאזין אחד גלובלי: תומך גם ב-data-confirm על טופס שלם (למשל מחיקת הזמנה מהרשימה)
+     וגם על כפתור בודד בתוך טופס גדול יותר (למשל כפתור המחיקה בתוך טופס ההזמנה עצמו,
+     שמשתמש ב-formaction כדי לא ליצור טופס מקונן בתוך טופס — HTML לא תומך בזה). */
   function initConfirmSubmit() {
-    document.querySelectorAll("[data-confirm]").forEach(function (form) {
-      form.addEventListener("submit", function (e) {
-        if (!window.confirm(form.getAttribute("data-confirm"))) e.preventDefault();
+    document.addEventListener("submit", function (e) {
+      var submitter = e.submitter;
+      var target = (submitter && submitter.hasAttribute("data-confirm")) ? submitter : e.target;
+      if (target && target.hasAttribute("data-confirm")) {
+        if (!window.confirm(target.getAttribute("data-confirm"))) e.preventDefault();
+      }
+    });
+  }
+
+  /* ---------------- עדכון סטטוס מהיר (דשבורד / רשימת הזמנות / בתוך ההזמנה) ---------------- */
+  function initQuickStatusForms() {
+    document.querySelectorAll(".quick-status-form select[name='status']").forEach(function (sel) {
+      if (sel._bound) return;
+      sel._bound = true;
+      sel.addEventListener("change", function () {
+        sel.form.submit();
       });
     });
   }

@@ -3,7 +3,7 @@ const { layout } = require("./layout");
 const icons = require("./icons");
 const { escapeHtml: e, formatPrice, formatDate } = require("../lib/util");
 const { calcOrder } = require("../lib/calc");
-const { STATUSES, SOURCES, PAYMENT_STATUSES, SUPPLY_STATUSES } = require("../lib/constants");
+const { STATUSES, SOURCES, PAYMENT_STATUSES, SUPPLY_STATUSES, statusColor } = require("../lib/constants");
 
 function itemRow(it) {
   it = it || { id: "", name: "", brandingText: "", qty: 1, unitCost: 0, unitBrandingCost: 0, unitPrice: 0, supplyStatus: "not_needed", supplierName: "", supplierEta: "" };
@@ -45,15 +45,22 @@ function renderOrderForm(order, settings, isNew) {
   const c = calcOrder(order, settings);
 
   const content = `
-  <form method="POST" action="${isNew ? "/orders" : `/orders/${e(order.id)}`}" class="order-form" data-order-form data-hourly-rate="${Number(settings.hourlyRate) || 0}">
-    <div class="sticky-actions">
-      <div class="field-hint">${isNew ? "הזמנה חדשה — מספר יוקצה אוטומטית בשמירה" : `הזמנה #${order.orderNumber}${order.createdAt ? " · נוצרה ב-" + formatDate((order.createdAt || "").slice(0, 10)) : ""}`}</div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        ${!isNew ? `<a href="/orders/${e(order.id)}/print" target="_blank" class="btn btn-secondary btn-sm">${icons.download} סיכום להדפסה</a>` : ""}
-        <button type="submit" class="btn btn-primary">${icons.check} שמירה</button>
-      </div>
+  <div class="sticky-actions">
+    <div class="field-hint">${isNew ? "הזמנה חדשה — מספר יוקצה אוטומטית בשמירה" : `הזמנה #${order.orderNumber}${order.createdAt ? " · נוצרה ב-" + formatDate((order.createdAt || "").slice(0, 10)) : ""}`}</div>
+    ${!isNew ? `
+    <form method="POST" action="/orders/${e(order.id)}/status" class="quick-status-form">
+      <input type="hidden" name="returnTo" value="/orders/${e(order.id)}" />
+      <select name="status" class="status-select status-select-lg" style="--pill-color:${statusColor(order.status)};" aria-label="עדכון סטטוס הזמנה">
+        ${STATUSES.map(s => `<option value="${e(s.value)}" ${order.status === s.value ? "selected" : ""}>${e(s.label)}</option>`).join("")}
+      </select>
+    </form>` : ""}
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      ${!isNew ? `<a href="/orders/${e(order.id)}/print" target="_blank" class="btn btn-secondary btn-sm">${icons.download} סיכום להדפסה</a>` : ""}
+      <button type="submit" form="order-form" class="btn btn-primary">${icons.check} שמירה</button>
     </div>
+  </div>
 
+  <form method="POST" action="${isNew ? "/orders" : `/orders/${e(order.id)}`}" id="order-form" class="order-form" data-order-form data-hourly-rate="${Number(settings.hourlyRate) || 0}">
     <div class="form-grid">
       <div class="form-main">
         <div class="admin-card">
@@ -158,9 +165,7 @@ function renderOrderForm(order, settings, isNew) {
         </div>
         ${!isNew ? `
         <div class="admin-card">
-          <form method="POST" action="/orders/${e(order.id)}/delete" data-confirm="למחוק את ההזמנה הזו לצמיתות? לא ניתן לשחזר.">
-            <button type="submit" class="btn btn-danger btn-block">${icons.trash} מחיקת הזמנה</button>
-          </form>
+          <button type="submit" formaction="/orders/${e(order.id)}/delete" formmethod="POST" formnovalidate class="btn btn-danger btn-block" data-confirm="למחוק את ההזמנה הזו לצמיתות? לא ניתן לשחזר.">${icons.trash} מחיקת הזמנה</button>
         </div>` : ""}
       </div>
     </div>

@@ -12,7 +12,7 @@ const { parseBody, toArray } = require("./lib/body");
 const auth = require("./lib/auth");
 const { uid, formatPrice, formatDate } = require("./lib/util");
 const { calcOrder } = require("./lib/calc");
-const { statusLabel, paymentLabel } = require("./lib/constants");
+const { STATUSES, statusLabel, paymentLabel } = require("./lib/constants");
 
 const { renderLogin } = require("./views/login");
 const { renderDashboard } = require("./views/dashboard");
@@ -198,6 +198,22 @@ router.post("/orders/:id", requireAuth(async (req, res, params) => {
 router.post("/orders/:id/delete", requireAuth((req, res, params) => {
   db.remove("orders", params.id);
   redirect(res, "/orders");
+}));
+
+// עדכון מהיר של סטטוס הזמנה בלבד — משמש את התפריט המהיר בדשבורד, ברשימת ההזמנות ובתוך ההזמנה,
+// כדי שלא יהיה צורך לפתוח ולשמור את כל טופס ההזמנה רק כדי לקדם סטטוס.
+router.post("/orders/:id/status", requireAuth(async (req, res, params) => {
+  const order = db.findById("orders", params.id);
+  if (!order) return notFound(req, res);
+  const { fields } = await parseBody(req);
+  const validStatuses = STATUSES.map(s => s.value);
+  if (validStatuses.includes(fields.status)) {
+    order.status = fields.status;
+    order.updatedAt = new Date().toISOString();
+    db.upsert("orders", order);
+  }
+  const returnTo = (fields.returnTo && fields.returnTo.startsWith("/")) ? fields.returnTo : `/orders/${order.id}`;
+  redirect(res, returnTo);
 }));
 
 // עדכון מהיר של פריט בודד (ספק/תאריך קבלה/סטטוס אספקה) — משמש מעמוד "ספקים וקניות"

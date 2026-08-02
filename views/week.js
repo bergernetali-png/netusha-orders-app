@@ -2,6 +2,7 @@
 const { layout } = require("./layout");
 const icons = require("./icons");
 const { escapeHtml: e, formatDate, todayISO, addDays, startOfWeek, WEEKDAY_NAMES } = require("../lib/util");
+const SHORT_WEEKDAY = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
 const { statusLabel, statusColor, OPEN_STATUSES } = require("../lib/constants");
 
 function renderWeekPage(orders, settings, query) {
@@ -33,11 +34,13 @@ function renderWeekPage(orders, settings, query) {
     <div class="week-day ${isToday ? "is-today" : ""}">
       <div class="week-day-head">
         <span class="week-day-date-badge">${dayNum}</span>
-        <span class="week-day-weekday">${WEEKDAY_NAMES[i]}${isToday ? " · היום" : ""}</span>
+        <span class="week-day-weekday">
+          <span class="wd-full">${WEEKDAY_NAMES[i]}</span><span class="wd-short">${SHORT_WEEKDAY[i]}</span>${isToday ? ` <span class="today-label">· היום</span>` : ""}
+        </span>
       </div>
       <div class="week-day-body">
         ${list.length ? list.map(o => `
-          <a href="/orders/${e(o.id)}" class="week-order">
+          <a href="/orders/${e(o.id)}" class="week-order" style="--pill-color:${statusColor(o.status)};">
             <span class="week-order-customer">${e(o.customerName)}</span>
             <span class="status-pill" style="--pill-color:${statusColor(o.status)};">${e(statusLabel(o.status))}</span>
           </a>`).join("") : `<div class="week-day-empty">אין אספקות</div>`}
