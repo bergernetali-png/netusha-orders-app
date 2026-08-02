@@ -12,9 +12,6 @@ for /f "delims=" %%i in ('powershell -NoProfile -Command "(Get-ChildItem -Path $
 if "%GIT%"=="" (
   echo.
   echo Git was not found on this computer.
-  echo Please download and install "Git for Windows" from https://git-scm.com/download/win
-  echo ^(just click Next through the installer with default options^), then run this file again.
-  echo.
   pause
   exit /b 1
 )
@@ -27,18 +24,32 @@ set "GIT=git"
 echo Using git: %GIT%
 echo.
 
-if exist ".git" (
-  echo Removing old .git folder...
-  rmdir /s /q ".git"
+if exist ".git\index.lock" (
+  echo Removing stuck lock file...
+  del /f /q ".git\index.lock" 2>nul
 )
 
-echo Initializing repository...
-"%GIT%" init -q
-"%GIT%" add .
-"%GIT%" -c user.email=netusha@local -c user.name=NETUSHA commit -q -m "Initial commit - all project files"
+if exist "netusha-orders" (
+  echo Removing stray folder: netusha-orders
+  rmdir /s /q "netusha-orders" 2>nul
+)
+if exist "אפליקצית הזמנות" (
+  echo Removing stray nested folder
+  rmdir /s /q "אפליקצית הזמנות" 2>nul
+)
+
+echo Staging and committing all changes...
+"%GIT%" -c user.email=netusha@local -c user.name=NETUSHA add -A
+"%GIT%" -c user.email=netusha@local -c user.name=NETUSHA commit -q -m "Update: mobile app-style navigation, PWA icon"
+if %errorlevel%==1 echo (Nothing new to commit, or already committed - continuing anyway)
 
 echo.
-echo Done! You can close this window now.
-echo Next step: open GitHub Desktop, choose File - Add local repository, and select this folder.
+echo Pushing to GitHub...
+"%GIT%" push origin main
+
+echo.
+echo If a browser window or sign-in popup appeared, sign in there to complete the push.
+echo Done! Check your GitHub page - the new files should be there now.
+echo Railway will pick this up and redeploy automatically within a minute or two.
 echo.
 pause

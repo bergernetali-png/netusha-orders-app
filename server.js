@@ -28,7 +28,8 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 
 const MIME = {
   ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "application/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon"
+  ".json": "application/json; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
+  ".webmanifest": "application/manifest+json; charset=utf-8"
 };
 
 function send(res, status, body, headers) {
@@ -291,7 +292,7 @@ const server = http.createServer(async (req, res) => {
     const parsed = url.parse(req.url, true);
     const pathname = decodeURIComponent(parsed.pathname);
 
-    if (req.method === "GET" && (pathname.startsWith("/css/") || pathname.startsWith("/js/") || pathname.startsWith("/images/"))) {
+    if (req.method === "GET" && (pathname.startsWith("/css/") || pathname.startsWith("/js/") || pathname.startsWith("/images/") || pathname === "/manifest.webmanifest")) {
       if (serveStatic(req, res, pathname)) return;
     }
 
